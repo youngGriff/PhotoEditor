@@ -20,8 +20,8 @@ import jp.co.cyberagent.android.gpuimage.GPUImageBulgeDistortionFilter;
 
 public class MainActivity extends AppCompatActivity implements CropImageView.OnSetCropOverlayMovedListener, CropImageView.OnCropImageCompleteListener {
     private CropImageView ivBulgeView;
-    private GPUImageBulgeDistortionFilter bulgeFilter;
-    private GPUImage gpuImage;
+    private GPUImageBulgeDistortionFilter mBulgeFilter;
+    private GPUImage mGPUImage;
     private ImageView ivPreview;
     private SeekBar sbScale;
 
@@ -37,9 +37,10 @@ public class MainActivity extends AppCompatActivity implements CropImageView.OnS
         Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(R.drawable.test)).getBitmap();
 
         ivBulgeView.setImageBitmap(bitmap);
-        bulgeFilter = new GPUImageBulgeDistortionFilter();
-        gpuImage = new GPUImage(this);
-        gpuImage.setImage(bitmap);
+        ivBulgeView.setOnSetCropOverlayMovedListener(this);
+        mBulgeFilter = new GPUImageBulgeDistortionFilter();
+        mGPUImage = new GPUImage(this);
+        mGPUImage.setImage(bitmap);
 
     }
 
@@ -55,19 +56,21 @@ public class MainActivity extends AppCompatActivity implements CropImageView.OnS
 
         float i = sbScale.getProgress();
         float scale = ((i - 10.F)) / 10;
-        float radius = (areaRect.width() / 2) / wholeImageRect.width();
+
+        float radius = calcInnerRadius(areaRect) / calcInnerRadius(wholeImageRect);
         PointF center = new PointF(areaRect.exactCenterX() / wholeImageRect.width(),
                 areaRect.exactCenterY() / wholeImageRect.height());
         Log.i("parameters", "scale is" + scale + "\n radius is " + radius
                 + "\n center: " + center.toString());
-        bulgeFilter.setScale(scale);
-        bulgeFilter.setCenter(center);
+        mBulgeFilter.setScale(scale);
+        mBulgeFilter.setRadius(radius);
+        mBulgeFilter.setCenter(center);
         new Thread(new Runnable() {
             @Override
             public void run() {
-                gpuImage.setFilter(bulgeFilter);
-                final Bitmap bitmap = gpuImage.getBitmapWithFilterApplied();
-                gpuImage.setImage(bitmap);
+                mGPUImage.setFilter(mBulgeFilter);
+                final Bitmap bitmap = mGPUImage.getBitmapWithFilterApplied();
+                mGPUImage.setImage(bitmap);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -85,11 +88,15 @@ public class MainActivity extends AppCompatActivity implements CropImageView.OnS
     }
 
     public void saveTo(View view) {
-        Toast.makeText(this, "Feature is not yet realized", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Feature is not realized yet", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onCropOverlayMoved(Rect rect) {
         ivBulgeView.getCroppedImageAsync();
+    }
+
+    private static float calcInnerRadius(Rect rect) {
+        return rect.right - rect.exactCenterX();
     }
 }

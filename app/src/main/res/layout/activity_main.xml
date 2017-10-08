@@ -17,6 +17,7 @@
         android:id="@+id/image"
         android:layout_width="match_parent"
         android:layout_height="200dp"
+        app:cropAutoZoomEnabled="false"
         app:cropGuidelines="off"
         app:cropAspectRatioX="1"
         app:cropAspectRatioY="1"
