@@ -19,7 +19,7 @@ import jp.co.cyberagent.android.gpuimage.GPUImage;
 import jp.co.cyberagent.android.gpuimage.GPUImageBulgeDistortionFilter;
 
 public class MainActivity extends AppCompatActivity implements CropImageView.OnSetCropOverlayMovedListener, CropImageView.OnCropImageCompleteListener {
-    private CropImageView ivBulgeView;
+    private CropImageView ivMainView;
     private GPUImageBulgeDistortionFilter mBulgeFilter;
     private GPUImage mGPUImage;
     private ImageView ivPreview;
@@ -29,15 +29,17 @@ public class MainActivity extends AppCompatActivity implements CropImageView.OnS
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ivBulgeView = findViewById(R.id.image);
+        ivMainView = findViewById(R.id.image);
         ivPreview = findViewById(R.id.iv_cropImage);
 
         sbScale = findViewById(R.id.sb_scale);
 
         Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(R.drawable.test)).getBitmap();
 
-        ivBulgeView.setImageBitmap(bitmap);
-        ivBulgeView.setOnSetCropOverlayMovedListener(this);
+        ivMainView.setImageBitmap(bitmap);
+        ivMainView.setOnSetCropOverlayMovedListener(this);
+        ivMainView.setOnCropImageCompleteListener(this);
+
         mBulgeFilter = new GPUImageBulgeDistortionFilter();
         mGPUImage = new GPUImage(this);
         mGPUImage.setImage(bitmap);
@@ -51,8 +53,8 @@ public class MainActivity extends AppCompatActivity implements CropImageView.OnS
         progressDialog.setTitle("Please wait");
         progressDialog.show();
 
-        Rect wholeImageRect = ivBulgeView.getWholeImageRect();
-        Rect areaRect = ivBulgeView.getCropRect();
+        Rect wholeImageRect = ivMainView.getWholeImageRect();
+        Rect areaRect = ivMainView.getCropRect();
 
         float i = sbScale.getProgress();
         float scale = ((i - 10.F)) / 10;
@@ -74,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements CropImageView.OnS
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        ivBulgeView.setImageBitmap(bitmap);
+                        ivMainView.setImageBitmap(bitmap);
                         progressDialog.dismiss();
                     }
                 });
@@ -84,6 +86,7 @@ public class MainActivity extends AppCompatActivity implements CropImageView.OnS
 
     @Override
     public void onCropImageComplete(CropImageView view, CropImageView.CropResult result) {
+        Log.i("crop", "crop is finished");
         ivPreview.setImageBitmap(result.getBitmap());
     }
 
@@ -93,7 +96,8 @@ public class MainActivity extends AppCompatActivity implements CropImageView.OnS
 
     @Override
     public void onCropOverlayMoved(Rect rect) {
-        ivBulgeView.getCroppedImageAsync();
+        Log.i("crop", "We are moving. Rect " + rect);
+        ivMainView.getCroppedImageAsync();
     }
 
     private static float calcInnerRadius(Rect rect) {

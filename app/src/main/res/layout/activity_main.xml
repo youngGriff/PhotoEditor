@@ -21,6 +21,7 @@
         app:cropGuidelines="off"
         app:cropAspectRatioX="1"
         app:cropAspectRatioY="1"
+        app:cropShowProgressBar="false"
         app:cropShape="oval" />
 
 
